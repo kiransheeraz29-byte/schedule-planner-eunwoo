@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Eunwoo - AI Schedule Assistant</title>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+    <style>
+        /* ----- RESET & BASE ----- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            background: #2c1810;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        /* ----- CONTAINER ----- */
+        .container {
+            width: 100%;
+            max-width: 1500px;
+            height: 90vh;
+            max-height: 900px;
+            display: flex;
+            background: #3d2317;
+            border-radius: 32px;
+            overflow: hidden;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 80px rgba(139, 90, 43, 0.08);
+            border: 1px solid rgba(160, 120, 80, 0.15);
+        }
+
+        /* ----- SCROLLBAR STYLING ----- */
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #8B6B4A;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #6B4F3A;
+        }
+
+        /* ----- SIDEBAR ----- */
+        .sidebar {
+            width: 300px;
+            min-width: 300px;
+            background: linear-gradient(145deg, #3d2317, #2c1810);
+            padding: 32px 24px;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid rgba(160, 120, 80, 0.12);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 6px;
+        }
+
+        .brand i {
+            font-size: 30px;
+            color: #C4A882;
+            background: rgba(160, 120, 80, 0.18);
+            padding: 10px;
+            border-radius: 14px;
+        }
+
+        .brand h2 {
+            font-size: 24px;
+            font-weight: 700;
+            color: #EDE0D4;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .dev-credit {
+            font-size: 10px;
+            font-weight: 400;
+            color: #A68B7A;
+            opacity: 0.7;
+            letter-spacing: 0.5px;
+        }
+
+        .tagline {
+            color: #A68B7A;
+            font-size: 13px;
+            font-weight: 400;
+            margin-left: 58px;
+            margin-top: -4px;
+            margin-bottom: 32px;
+        }
+
+        .quick-actions {
+            flex: 1;
+        }
+
+        .quick-actions h3 {
+            color: #C4A882;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 18px;
+        }
+
+        .quick-btn {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            width: 100%;
+            padding: 14px 18px;
+            margin-bottom: 10px;
+            background: rgba(160, 120, 80, 0.08);
+            border: 1px solid rgba(160, 120, 80, 0.12);
+            border-radius: 14px;
+            color: #D4C0B0;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .quick-btn i {
+            font-size: 18px;
+            color: #C4A882;
+            width: 24px;
+            text-align: center;
+        }
+
+        .quick-btn:hover {
+            background: rgba(160, 120, 80, 0.18);
+            border-color: #C4A882;
+            color: #EDE0D4;
+            transform: translateX(4px);
+            box-shadow: 0 4px 20px rgba(160, 120, 80, 0.12);
+        }
+
+        .sidebar-footer {
+            margin-top: auto;
+            padding-top: 24px;
+            border-top: 1px solid rgba(160, 120, 80, 0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .sidebar-footer p {
+            color: #A68B7A;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: color 0.2s;
+            padding: 8px 12px;
+            border-radius: 10px;
+        }
+
+        .sidebar-footer p:hover {
+            color: #C4A882;
+            background: rgba(160, 120, 80, 0.06);
+        }
+
+        .sidebar-footer i {
+            width: 22px;
+            font-size: 16px;
+            color: #C4A882;
+        }
+
+        /* ----- CHAT AREA ----- */
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #2c1810;
+        }
+
+        /* ----- CHAT HEADER ----- */
+        .chat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 28px;
+            border-bottom: 1px solid rgba(160, 120, 80, 0.08);
+            background: rgba(44, 24, 16, 0.7);
+            backdrop-filter: blur(12px);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            overflow: hidden;
+            background: #8B6B4A;
+            flex-shrink: 0;
+            border: 2px solid rgba(160, 120, 80, 0.3);
+        }
+
+        .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .user-details h3 {
+            font-size: 17px;
+            font-weight: 700;
+            color: #EDE0D4;
+            letter-spacing: -0.3px;
+        }
+
+        .user-details p {
+            font-size: 12px;
+            color: #A68B7A;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .online {
+            color: #8B6B4A;
+            font-size: 9px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .header-actions button {
+            background: rgba(160, 120, 80, 0.07);
+            border: none;
+            color: #A68B7A;
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .header-actions button:hover {
+            background: rgba(160, 120, 80, 0.18);
+            color: #C4A882;
+            transform: scale(1.05);
+        }
+
+        /* ----- MESSAGES ----- */
+        .messages {
+            flex: 1;
+            padding: 24px 28px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            background: radial-gradient(ellipse at 70% 20%, rgba(160, 120, 80, 0.03) 0%, transparent 70%);
+        }
+
+        .message {
+            display: flex;
+            gap: 14px;
+            max-width: 78%;
+            animation: fadeIn 0.35s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message .avatar {
+            width: 38px;
+            height: 38px;
+            flex-shrink: 0;
+            margin-top: 4px;
+        }
+
+        .user-message {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        .user-message .bubble {
+            background: linear-gradient(135deg, #8B6B4A, #6B4F3A);
+            color: #fff;
+            border-radius: 18px 18px 4px 18px;
+            box-shadow: 0 4px 20px rgba(139, 107, 74, 0.25);
+        }
+
+        .user-message .bubble p {
+            color: #fff;
+        }
+
+        .bot-message {
+            align-self: flex-start;
+        }
+
+        .bot-message .bubble {
+            background: rgba(160, 120, 80, 0.07);
+            border: 1px solid rgba(160, 120, 80, 0.12);
+            color: #D4C0B0;
+            border-radius: 18px 18px 18px 4px;
+            backdrop-filter: blur(4px);
+        }
+
+        .bubble {
+            padding: 16px 22px;
+            border-radius: 18px;
+            line-height: 1.7;
+            font-size: 15px;
+            position: relative;
+            word-wrap: break-word;
+            max-width: 100%;
+            transition: all 0.2s;
+        }
+
+        .bubble p {
+            margin-bottom: 6px;
+        }
+
+        .bubble p:last-child {
+            margin-bottom: 0;
+        }
+
+        .bubble strong {
+            color: #C4A882;
+        }
+
+        .user-message .bubble strong {
+            color: #fff;
+        }
+
+        .timestamp {
+            display: block;
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.4);
+            margin-top: 8px;
+            letter-spacing: 0.3px;
+        }
+
+        .bot-message .timestamp {
+            color: rgba(255, 255, 255, 0.25);
+        }
+
+        /* ----- TYPING INDICATOR ----- */
+        .typing-indicator {
+            display: none;
+            align-items: center;
+            gap: 14px;
+            max-width: 78%;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .typing-indicator .avatar {
+            width: 38px;
+            height: 38px;
+        }
+
+        .typing-indicator .bubble {
+            background: rgba(160, 120, 80, 0.07);
+            border: 1px solid rgba(160, 120, 80, 0.1);
+            border-radius: 18px 18px 18px 4px;
+            padding: 16px 22px;
+        }
+
+        .dots {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            padding: 2px 0;
+        }
+
+        .dots span {
+            width: 10px;
+            height: 10px;
+            background: #8B6B4A;
+            border-radius: 50%;
+            display: inline-block;
+            animation: dotBounce 1.4s infinite ease-in-out both;
+        }
+
+        .dots span:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+        .dots span:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+        .dots span:nth-child(3) {
+            animation-delay: 0s;
+        }
+
+        @keyframes dotBounce {
+            0%,
+            80%,
+            100% {
+                transform: scale(0.6);
+                opacity: 0.4;
+            }
+            40% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        /* ----- INPUT AREA ----- */
+        .input-area {
+            padding: 16px 28px 20px;
+            border-top: 1px solid rgba(160, 120, 80, 0.06);
+            background: rgba(44, 24, 16, 0.5);
+            backdrop-filter: blur(8px);
+        }
+
+        .input-wrapper {
+            display: flex;
+            align-items: center;
+            background: rgba(160, 120, 80, 0.06);
+            border: 1px solid rgba(160, 120, 80, 0.12);
+            border-radius: 20px;
+            padding: 4px 6px 4px 18px;
+            transition: all 0.3s ease;
+        }
+
+        .input-wrapper:focus-within {
+            border-color: #8B6B4A;
+            box-shadow: 0 0 30px rgba(139, 107, 74, 0.08);
+            background: rgba(160, 120, 80, 0.08);
+        }
+
+        .attachment-icon {
+            color: #6B4F3A;
+            font-size: 18px;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .attachment-icon:hover {
+            color: #8B6B4A;
+        }
+
+        .input-wrapper input {
+            flex: 1;
+            padding: 14px 16px;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #EDE0D4;
+            font-size: 15px;
+            font-weight: 400;
+        }
+
+        .input-wrapper input::placeholder {
+            color: #6B4F3A;
+            font-weight: 400;
+        }
+
+        .input-wrapper input:focus::placeholder {
+            color: #8B6B4A;
+        }
+
+        #sendBtn {
+            background: linear-gradient(135deg, #8B6B4A, #6B4F3A);
+            border: none;
+            color: #fff;
+            width: 50px;
+            height: 50px;
+            border-radius: 16px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 24px rgba(139, 107, 74, 0.3);
+        }
+
+        #sendBtn:hover {
+            transform: scale(1.04);
+            box-shadow: 0 6px 32px rgba(139, 107, 74, 0.45);
+        }
+
+        #sendBtn:active {
+            transform: scale(0.94);
+        }
+
+        .input-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 12px;
+            padding: 0 6px;
+        }
+
+        .input-footer p {
+            color: #6B4F3A;
+            font-size: 12px;
+            font-weight: 400;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .input-footer p i {
+            font-size: 13px;
+            color: #8B6B4A;
+        }
+
+        .input-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .input-actions button {
+            background: rgba(160, 120, 80, 0.06);
+            border: none;
+            color: #7A5F4A;
+            width: 36px;
+            height: 36px;
+            border-radius: 12px;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .input-actions button:hover {
+            background: rgba(160, 120, 80, 0.14);
+            color: #8B6B4A;
+        }
+
+        /* ----- RESPONSIVE ----- */
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 240px;
+                min-width: 240px;
+                padding: 24px 16px;
+            }
+            .quick-btn {
+                font-size: 12px;
+                padding: 12px 14px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 8px;
+            }
+            .container {
+                height: 96vh;
+                max-height: none;
+                border-radius: 20px;
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                min-width: unset;
+                flex-direction: row;
+                flex-wrap: wrap;
+                padding: 14px 18px;
+                border-right: none;
+                border-bottom: 1px solid rgba(160, 120, 80, 0.08);
+                max-height: 110px;
+                overflow-y: auto;
+            }
+            .brand {
+                gap: 10px;
+            }
+            .brand h2 {
+                font-size: 20px;
+            }
+            .tagline {
+                display: none;
+            }
+            .quick-actions {
+                display: none;
+            }
+            .sidebar-footer {
+                display: none;
+            }
+            .chat-area {
+                height: 100%;
+            }
+            .chat-header {
+                padding: 12px 16px;
+            }
+            .user-details h3 {
+                font-size: 15px;
+            }
+            .messages {
+                padding: 16px;
+                gap: 14px;
+            }
+            .message {
+                max-width: 90%;
+            }
+            .bubble {
+                padding: 14px 18px;
+                font-size: 14px;
+            }
+            .input-area {
+                padding: 12px 16px 16px;
+            }
+            .input-wrapper {
+                padding: 2px 4px 2px 14px;
+            }
+            .input-wrapper input {
+                padding: 12px 12px;
+                font-size: 14px;
+            }
+            #sendBtn {
+                width: 44px;
+                height: 44px;
+                font-size: 16px;
+            }
+            .input-footer p {
+                font-size: 10px;
+            }
+            .input-actions button {
+                width: 32px;
+                height: 32px;
+                font-size: 13px;
+            }
+        }
+
+        @media (max-width: 420px) {
+            .header-actions button {
+                width: 34px;
+                height: 34px;
+                font-size: 13px;
+            }
+            .bubble {
+                font-size: 13px;
+                padding: 12px 14px;
+            }
+            .message .avatar {
+                width: 32px;
+                height: 32px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Main Container -->
+    <div class="container">
+
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="brand">
+                <i class="fas fa-calendar-check"></i>
+                <h2>
+                    Eunwoo
+                    <span class="dev-credit">developed by Haniya</span>
+                </h2>
+            </div>
+            <p class="tagline">Your Schedule Architect</p>
+
+            <div class="quick-actions">
+                <h3>Quick Actions</h3>
+                <button class="quick-btn" data-prompt="Create a daily study schedule for a medical student">
+                    <i class="fas fa-user-graduate"></i> Student Timetable
+                </button>
+                <button class="quick-btn" data-prompt="Generate a weekly work schedule for a remote software developer">
+                    <i class="fas fa-briefcase"></i> Work Planner
+                </button>
+                <button class="quick-btn" data-prompt="Create a balanced daily routine including exercise, work, and relaxation">
+                    <i class="fas fa-heartbeat"></i> Lifestyle Planner
+                </button>
+                <button class="quick-btn" data-prompt="Generate a study schedule with Pomodoro technique">
+                    <i class="fas fa-clock"></i> Pomodoro Schedule
+                </button>
+            </div>
+
+            <div class="sidebar-footer">
+                <p id="clearChat"><i class="fas fa-trash-alt"></i> Clear Chat</p>
+                <p id="exportChat"><i class="fas fa-download"></i> Export Chat</p>
+                <p id="themeToggle"><i class="fas fa-moon"></i> Dark Mode</p>
+            </div>
+        </div>
+
+        <!-- Chat Area -->
+        <div class="chat-area">
+
+            <!-- Header -->
+            <div class="chat-header">
+                <div class="user-info">
+                    <div class="avatar">
+                        <img src="https://ui-avatars.com/api/?name=Eunwoo&background=8B6B4A&color=fff&size=40&bold=true" alt="Eunwoo" />
+                    </div>
+                    <div class="user-details">
+                        <h3>Eunwoo</h3>
+                        <p><i class="fas fa-circle online"></i> Online &bull; Schedule Expert</p>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button id="imageBtn"><i class="fas fa-image"></i></button>
+                    <button id="clearChatBtn"><i class="fas fa-trash-alt"></i></button>
+                    <button id="exportChatBtn"><i class="fas fa-download"></i></button>
+                </div>
+            </div>
+
+            <!-- Messages -->
+            <div class="messages" id="chatMessages">
+                <div class="message bot-message">
+                    <div class="avatar">
+                        <img src="https://ui-avatars.com/api/?name=Eunwoo&background=8B6B4A&color=fff&size=40&bold=true" alt="Eunwoo" />
+                    </div>
+                    <div class="bubble">
+                        <p>Hello! I'm <strong>Eunwoo</strong>, your personal schedule architect. 🏛️</p>
+                        <p>I can create <strong>daily, weekly,</strong> or <strong>monthly</strong> planners for <strong>students, professionals,</strong> or <strong>anyone</strong> who wants to stay organized.</p>
+                        <p>How can I help you today? ✨</p>
+                        <span class="timestamp">Just now</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Typing Indicator -->
+            <div class="typing-indicator" id="typingIndicator">
+                <div class="avatar">
+                    <img src="https://ui-avatars.com/api/?name=Eunwoo&background=8B6B4A&color=fff&size=40&bold=true" alt="Eunwoo" />
+                </div>
+                <div class="bubble">
+                    <div class="dots">
+                        <span></span><span></span><span></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="input-area">
+                <div class="input-wrapper">
+                    <i class="fas fa-paperclip attachment-icon"></i>
+                    <input type="text" id="messageInput" placeholder="Describe your schedule needs..." autocomplete="off" />
+                    <button id="sendBtn"><i class="fas fa-paper-plane"></i></button>
+                </div>
+                <div class="input-footer">
+                    <p><i class="fas fa-robot"></i> Ask for schedules, timetables, or planners</p>
+                    <div class="input-actions">
+                        <button id="imageBtnFooter"><i class="fas fa-image"></i></button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // ----- DOM ELEMENTS -----
+        const chatMessages = document.getElementById('chatMessages');
+        const messageInput = document.getElementById('messageInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const typingIndicator = document.getElementById('typingIndicator');
+        const clearChatBtn = document.getElementById('clearChat');
+        const exportChatBtn = document.getElementById('exportChat');
+        const themeToggle = document.getElementById('themeToggle');
+
+        // ----- STATE -----
+        let isDarkMode = true;
+        let messageHistory = [];
+
+        // ----- QUICK ACTION BUTTONS -----
+        document.querySelectorAll('.quick-btn').forEach((btn) => {
+            btn.addEventListener('click', function () {
+                const prompt = this.getAttribute('data-prompt');
+                messageInput.value = prompt;
+                sendMessage();
+            });
+        });
+
+        // ----- SEND MESSAGE -----
+        function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message) return;
+
+            addMessage(message, 'user');
+            messageInput.value = '';
+            messageInput.focus();
+
+            typingIndicator.style.display = 'flex';
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            fetch('/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ message: message }),
+            })
+                .then((res) => res.json())
+                .then((data) => {
+                    typingIndicator.style.display = 'none';
+                    if (data.response) {
+                        addMessage(data.response, 'bot');
+                    } else if (data.error) {
+                        addMessage('⚠️ Sorry, something went wrong. Please try again.', 'bot');
+                    }
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                })
+                .catch((error) => {
+                    typingIndicator.style.display = 'none';
+                    addMessage('⚠️ Network error. Please check your connection.', 'bot');
+                    console.error('Error:', error);
+                });
+        }
+
+        // ----- ADD MESSAGE TO UI -----
+        function addMessage(text, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+
+            const avatarHTML = `
+                <div class="avatar">
+                    <img src="https://ui-avatars.com/api/?name=${sender === 'user' ? 'You' : 'Eunwoo'}&background=8B6B4A&color=fff&size=40&bold=true" alt="${sender}" />
+                </div>
+            `;
+
+            const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            const bubbleHTML = `
+                <div class="bubble">
+                    <p>${formatMessage(text)}</p>
+                    <span class="timestamp">${timestamp}</span>
+                </div>
+            `;
+
+            messageDiv.innerHTML = avatarHTML + bubbleHTML;
+            chatMessages.appendChild(messageDiv);
+            messageHistory.push({ sender, text, timestamp });
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // ----- FORMAT MESSAGE -----
+        function formatMessage(text) {
+            text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            text = text.replace(/\n/g, '<br>');
+            return text;
+        }
+
+        // ----- EVENT LISTENERS -----
+        sendBtn.addEventListener('click', sendMessage);
+
+        messageInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        messageInput.addEventListener('input', function () {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+        });
+
+        // ----- CLEAR CHAT -----
+        clearChatBtn.addEventListener('click', function () {
+            if (confirm('Clear all chat messages?')) {
+                chatMessages.innerHTML = `
+                    <div class="message bot-message">
+                        <div class="avatar">
+                            <img src="https://ui-avatars.com/api/?name=Eunwoo&background=8B6B4A&color=fff&size=40&bold=true" alt="Eunwoo" />
+                        </div>
+                        <div class="bubble">
+                            <p>✨ Chat cleared. How can I help you with your schedule today?</p>
+                            <span class="timestamp">Just now</span>
+                        </div>
+                    </div>
+                `;
+                messageHistory = [];
+            }
+        });
+
+        // ----- EXPORT CHAT -----
+        exportChatBtn.addEventListener('click', function () {
+            let text = '=== Eunwoo - Schedule Chat ===\n\n';
+            document.querySelectorAll('.message').forEach((msg) => {
+                const sender = msg.classList.contains('user-message') ? 'You' : 'Eunwoo';
+                const bubbleText = msg.querySelector('.bubble p')?.innerText || '';
+                const timestamp = msg.querySelector('.timestamp')?.innerText || '';
+                text += `[${timestamp}] ${sender}: ${bubbleText.replace(/<br>/g, '\n')}\n\n`;
+            });
+            text += '\n=== End of Chat ===';
+
+            const blob = new Blob([text], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `chat_export_${new Date().toISOString().slice(0, 10)}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+
+        // ----- THEME TOGGLE (Brown Theme) -----
+        themeToggle.addEventListener('click', function () {
+            isDarkMode = !isDarkMode;
+            const icon = this.querySelector('i');
+
+            if (isDarkMode) {
+                // Dark Brown
+                document.body.style.background = '#2c1810';
+                document.querySelector('.container').style.background = '#3d2317';
+                document.querySelector('.chat-area').style.background = '#2c1810';
+                document.querySelector('.sidebar').style.background = 'linear-gradient(145deg, #3d2317, #2c1810)';
+                document.querySelector('.brand h2').style.color = '#EDE0D4';
+                document.querySelector('.tagline').style.color = '#A68B7A';
+                document.querySelector('.user-details h3').style.color = '#EDE0D4';
+                document.querySelector('.user-details p').style.color = '#A68B7A';
+                document.querySelector('.input-wrapper input').style.color = '#EDE0D4';
+                document.querySelector('.chat-header').style.background = 'rgba(44, 24, 16, 0.7)';
+                document.querySelectorAll('.quick-btn').forEach(btn => {
+                    btn.style.color = '#D4C0B0';
+                });
+                document.querySelectorAll('.sidebar-footer p').forEach(p => {
+                    p.style.color = '#A68B7A';
+                });
+                icon.className = 'fas fa-moon';
+                this.innerHTML = '<i class="fas fa-moon"></i> Dark Mode';
+            } else {
+                // Light Brown
+                document.body.style.background = '#F5EDE6';
+                document.querySelector('.container').style.background = '#EDE0D4';
+                document.querySelector('.chat-area').style.background = '#F5EDE6';
+                document.querySelector('.sidebar').style.background = 'linear-gradient(145deg, #EDE0D4, #D4C0B0)';
+                document.querySelector('.brand h2').style.color = '#2c1810';
+                document.querySelector('.tagline').style.color = '#6B4F3A';
+                document.querySelector('.user-details h3').style.color = '#2c1810';
+                document.querySelector('.user-details p').style.color = '#6B4F3A';
+                document.querySelector('.input-wrapper input').style.color = '#2c1810';
+                document.querySelector('.chat-header').style.background = 'rgba(237, 224, 212, 0.7)';
+                document.querySelectorAll('.quick-btn').forEach(btn => {
+                    btn.style.color = '#3d2317';
+                });
+                document.querySelectorAll('.sidebar-footer p').forEach(p => {
+                    p.style.color = '#6B4F3A';
+                });
+                icon.className = 'fas fa-sun';
+                this.innerHTML = '<i class="fas fa-sun"></i> Light Mode';
+            }
+        });
+
+        // ----- GENERATE IMAGE -----
+        document.getElementById('imageBtn')?.addEventListener('click', function () {
+            const lastUserMessage = document.querySelector('.user-message:last-child .bubble p');
+            const prompt = lastUserMessage ? lastUserMessage.innerText : 'Create a beautiful weekly schedule planner';
+            
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            this.disabled = true;
+            
+            const chat = document.getElementById('chatMessages');
+            const genMsg = document.createElement('div');
+            genMsg.className = 'message bot-message';
+            genMsg.id = 'generatingMsg';
+            genMsg.innerHTML = `
+                <div class="avatar">
+                    <img src="https://ui-avatars.com/api/?name=Eunwoo&background=8B6B4A&color=fff&size=40&bold=true" alt="Eunwoo" />
+                </div>
+                <div class="bubble">
+                    <p>🎨 Generating your schedule image... Please wait.</p>
+                </div>
+            `;
+            chat.appendChild(genMsg);
+            chat.scrollTop = chat.scrollHeight;
+            
+            fetch('/generate-image', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ prompt: prompt }),
+            })
+            .then(res => res.json())
+            .then(data => {
+                const genMsgEl = document.getElementById('generatingMsg');
+                if (genMsgEl) genMsgEl.remove();
+                
+                this.innerHTML = '<i class="fas fa-image"></i>';
+                this.disabled = false;
+                
+                if (data.image_url) {
+                    const imgDiv = document.createElement('div');
+                    imgDiv.className = 'message bot-message';
+                    imgDiv.innerHTML = `
+                        <div class="avatar">
+                            <img src="https://ui-avatars.com/api/?name=Eunwoo&background=8B6B4A&color=fff&size=40&bold=true" alt="Eunwoo" />
+                        </div>
+                        <div class="bubble">
+                            <p>📸 Here's your schedule image:</p>
+                            <img src="${data.image_url}?t=${Date.now()}" style="max-width:100%; border-radius:12px; margin-top:10px; border: 2px solid #8B6B4A;" />
+                            <br>
+                            <a href="${data.image_url}" download style="color: #8B6B4A; text-decoration: none; font-weight: 600; display: inline-block; margin-top: 10px;">
+                                <i class="fas fa-download"></i> Download Image
+                            </a>
+                            <span class="timestamp">Just now</span>
+                        </div>
+                    `;
+                    chat.appendChild(imgDiv);
+                    chat.scrollTop = chat.scrollHeight;
+                } else {
+                    addMessage('❌ Failed to generate image. Please try again.', 'bot');
+                }
+            })
+            .catch(error => {
+                this.innerHTML = '<i class="fas fa-image"></i>';
+                this.disabled = false;
+                const genMsgEl = document.getElementById('generatingMsg');
+                if (genMsgEl) genMsgEl.remove();
+                addMessage('❌ Error generating image: ' + error.message, 'bot');
+            });
+        });
+
+        document.getElementById('imageBtnFooter')?.addEventListener('click', function () {
+            document.getElementById('imageBtn').click();
+        });
+
+        // ----- KEYBOARD SHORTCUTS -----
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === '/') {
+                e.preventDefault();
+                messageInput.focus();
+            }
+        });
+
+        // ----- FILE UPLOAD (Paperclip Icon) -----
+        document.querySelector('.attachment-icon')?.addEventListener('click', function () {
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = 'image/*,.pdf,.doc,.docx,.txt,.csv,.xlsx';
+            fileInput.style.display = 'none';
+            document.body.appendChild(fileInput);
+            
+            fileInput.click();
+            
+            fileInput.addEventListener('change', function (event) {
+                const file = event.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const fileData = e.target.result;
+                    messageInput.value = `📎 I uploaded: ${file.name}. Please help me with this file.`;
+                    messageInput.placeholder = `📎 ${file.name} uploaded`;
+                    addMessage(`📎 Uploaded: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`, 'user');
+                    sendMessageWithFile(fileData);
+                };
+                reader.readAsDataURL(file);
+                
+                this.remove();
+            });
+        });
+
+        // ----- SEND MESSAGE WITH FILE -----
+        function sendMessageWithFile(fileData) {
+            const message = messageInput.value.trim();
+            if (!message && !fileData) return;
+
+            addMessage(message, 'user');
+            messageInput.value = '';
+            messageInput.focus();
+
+            typingIndicator.style.display = 'flex';
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            fetch('/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                    message: message,
+                    file: fileData
+                }),
+            })
+            .then((res) => res.json())
+            .then((data) => {
+                typingIndicator.style.display = 'none';
+                if (data.response) {
+                    addMessage(data.response, 'bot');
+                } else if (data.error) {
+                    addMessage('⚠️ Sorry, something went wrong. Please try again.', 'bot');
+                }
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            })
+            .catch((error) => {
+                typingIndicator.style.display = 'none';
+                addMessage('⚠️ Network error. Please check your connection.', 'bot');
+                console.error('Error:', error);
+            });
+        }
+
+        // Initial focus
+        messageInput.focus();
+
+        console.log('🤖 Eunwoo - Schedule Chatbot loaded successfully!');
+    </script>
+
+</body>
+</html>
