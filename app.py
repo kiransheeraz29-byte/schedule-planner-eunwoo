@@ -7,6 +7,8 @@ import random
 import re
 import json
 from PIL import Image, ImageDraw, ImageFont
+import io
+import base64
 
 load_dotenv()
 app = Flask(__name__)
@@ -14,44 +16,56 @@ app = Flask(__name__)
 # Get API key
 GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
 
+# Don't exit - just log the error
 if not GEMINI_API_KEY:
     print("❌ ERROR: GEMINI_API_KEY not found in .env file")
-    exit(1)
+    # Don't exit, just continue with fallback
 
-print(f"✅ API Key loaded: {GEMINI_API_KEY[:10]}...")
+print(f"✅ API Key loaded: {GEMINI_API_KEY[:10] if GEMINI_API_KEY else 'None'}...")
 
-# Configure Gemini
-try:
-    genai.configure(api_key=GEMINI_API_KEY)
-    print("✅ Gemini configured successfully!")
-except Exception as e:
-    print(f"❌ Failed to configure Gemini: {e}")
-
-# Initialize model
+# Configure Gemini lazily (only when needed)
 model = None
-model_names = [
-    'gemini-1.5-flash',
-    'gemini-1.5-pro', 
-    'gemini-pro',
-    'models/gemini-1.5-flash',
-    'models/gemini-1.5-pro',
-]
 
-for model_name in model_names:
+def get_model():
+    """Lazy initialization of Gemini model"""
+    global model
+    if model is not None:
+        return model
+    
+    if not GEMINI_API_KEY:
+        return None
+    
     try:
-        print(f"🔄 Trying: {model_name}")
-        test_model = genai.GenerativeModel(model_name)
-        test_response = test_model.generate_content("Say OK")
-        if test_response and test_response.text:
-            model = test_model
-            print(f"✅ Using model: {model_name}")
-            break
+        genai.configure(api_key=GEMINI_API_KEY)
+        print("✅ Gemini configured successfully!")
+        
+        model_names = [
+            'gemini-1.5-flash',
+            'gemini-1.5-pro', 
+            'gemini-pro',
+            'models/gemini-1.5-flash',
+            'models/gemini-1.5-pro',
+        ]
+        
+        for model_name in model_names:
+            try:
+                print(f"🔄 Trying: {model_name}")
+                test_model = genai.GenerativeModel(model_name)
+                test_response = test_model.generate_content("Say OK")
+                if test_response and test_response.text:
+                    model = test_model
+                    print(f"✅ Using model: {model_name}")
+                    return model
+            except Exception as e:
+                print(f"❌ {model_name} failed: {str(e)[:80]}")
+                continue
     except Exception as e:
-        print(f"❌ {model_name} failed: {str(e)[:80]}")
-        continue
+        print(f"❌ Failed to configure Gemini: {e}")
+    
+    return None
 
 # ============================================
-# GREY COLOR PALETTES
+# GREY COLOR PALETTES (keep as is)
 # ============================================
 COLOR_PALETTES = [
     {'primary': '#4A4A4A', 'secondary': '#2A2A2A', 'accent': '#6B6B6B', 'bg': '#1A1A1A', 'card': '#2D2D2D', 'text': '#E8E8E8'},
@@ -102,7 +116,9 @@ def extract_schedule_details(prompt):
 
 def generate_schedule_with_gemini(prompt, days, time_slots):
     """Generate a schedule using Gemini or fallback"""
-    if model:
+    model_instance = get_model()
+    
+    if model_instance:
         try:
             schedule_prompt = f"""
 Based on this request: "{prompt}"
@@ -120,7 +136,7 @@ Return ONLY a JSON object with this exact format:
 Each activity should be specific to the request (4-6 words max).
 Make it practical and detailed.
 """
-            response = model.generate_content(schedule_prompt)
+            response = model_instance.generate_content(schedule_prompt)
             if response and response.text:
                 json_match = re.search(r'\{.*\}', response.text, re.DOTALL)
                 if json_match:
@@ -225,9 +241,10 @@ def chat():
             return jsonify({'response': response_text})
         
         # For non-schedule requests, use Gemini or fallback
-        if model:
+        model_instance = get_model()
+        if model_instance:
             try:
-                response = model.generate_content(f"""
+                response = model_instance.generate_content(f"""
 You are Eunwoo, a helpful schedule planning assistant.
 Give brief, practical responses. Use emojis.
 User: {user_message}
@@ -390,15 +407,15 @@ def generate_image():
         brand_width = draw.textlength(brand_text, font=font_footer)
         draw.text((width - margin - brand_width - 10, footer_y), brand_text, fill=palette['text'], font=font_footer)
         
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S_%f')[:-3]
-        filename = f'planner_{timestamp}.png'
-        image_path = os.path.join('static', filename)
-        
-        os.makedirs('static', exist_ok=True)
-        img.save(image_path, quality=95)
+        # Return image as base64 instead of saving to filesystem
+        img_buffer = io.BytesIO()
+        img.save(img_buffer, format='PNG', quality=95)
+        img_buffer.seek(0)
+        img_base64 = base64.b64encode(img_buffer.getvalue()).decode('utf-8')
         
         return jsonify({
-            'image_url': f'/{image_path}',
+            'image_base64': img_base64,
+            'image_url': f'data:image/png;base64,{img_base64}',
             'success': True,
             'days': days,
             'time_slots': len(time_slots),
@@ -411,10 +428,3 @@ def generate_image():
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
-        
-
-
-
-
-
-
